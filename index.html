@@ -7932,6 +7932,36 @@ body.ltr .about-v411-intro p{line-height:1.55;}
 }
 </style>
 
+<style>
+/* ===== Mobile touch/readability polish ===== */
+@media (max-width:520px){
+  .lang-btn,.menu-btn{
+    width:44px!important;
+    height:44px!important;
+    min-width:44px!important;
+    min-height:44px!important;
+    touch-action:manipulation;
+  }
+  .nav-links a{
+    display:flex;
+    align-items:center;
+    min-height:44px;
+    padding:10px 12px!important;
+    touch-action:manipulation;
+  }
+  .hero-fact span{
+    font-size:.69rem!important;
+    line-height:1.35!important;
+  }
+  #contact .contact93-rail-links a{
+    min-height:40px!important;
+    padding:0 11px!important;
+    font-size:.74rem!important;
+    touch-action:manipulation;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="progress" id="progress"></div>
