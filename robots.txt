@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://arabicwithabdelmalek-cpu.github.io/abdelmalek-portfolio/sitemap.xml
