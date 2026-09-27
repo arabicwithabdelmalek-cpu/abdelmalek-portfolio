@@ -8896,5 +8896,121 @@ langBtn.addEventListener('click', ()=>applyLang(currentLang === 'ar' ? 'en' : 'a
   observer.observe(facts);
 })();
 </script>
+
+<!-- Portfolio analytics events -->
+<script>
+(() => {
+  const track = (eventName, params = {}) => {
+    if (typeof window.gtag !== 'function') return;
+    window.gtag('event', eventName, {
+      ...params,
+      page_path: window.location.pathname + window.location.hash
+    });
+  };
+
+  const slug = value => String(value || '')
+    .replace(/^#/, '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  // Track project case-study opens.
+  document.querySelectorAll('.project-link-v21[href^="#"]').forEach(link => {
+    link.addEventListener('click', () => {
+      const projectId = slug(link.getAttribute('href'));
+      if (!projectId) return;
+      track(`project_open_${projectId.replace(/-/g, '_')}`, {
+        project_id: projectId
+      });
+    });
+  });
+
+  // Track high-value outbound contact/social clicks.
+  const channelFor = href => {
+    try {
+      const url = new URL(href, window.location.href);
+      const host = url.hostname.replace(/^www\./, '');
+      if (host === 'wa.me') return 'whatsapp';
+      if (host === 'linkedin.com') return 'linkedin';
+      if (host === 't.me') return 'telegram';
+      if (host === 'mueen-ar.me') return 'mueen_site';
+      if (host === 'instagram.com') {
+        if (url.pathname.includes('mueen.arabic')) return 'instagram_mueen';
+        if (url.pathname.includes('abdelmalk_adel2020')) return 'instagram_personal';
+        return 'instagram';
+      }
+    } catch (_) {}
+    return '';
+  };
+
+  document.querySelectorAll('a[href]').forEach(link => {
+    const channel = channelFor(link.href);
+    if (!channel) return;
+    link.addEventListener('click', () => {
+      track(`contact_click_${channel}`, {
+        contact_channel: channel,
+        link_location: link.closest('#contact') ? 'contact_section' : 'page',
+        link_url: link.href
+      });
+    });
+  });
+
+  // Track language switches.
+  const langButton = document.getElementById('langBtn');
+  if (langButton) {
+    langButton.addEventListener('click', () => {
+      const newLanguage = document.documentElement.lang === 'en' ? 'en' : 'ar';
+      track(`language_switch_${newLanguage}`, {
+        language: newLanguage
+      });
+    });
+  }
+
+  // Count a section only after it stays around the viewport focus area briefly.
+  const trackedSectionIds = new Set([
+    'work', 'interactive', 'story-case', 'primer-book',
+    'expertise', 'experience', 'education', 'calligraphy', 'contact'
+  ]);
+  const seenSections = new Set();
+  const timers = new Map();
+
+  const sectionAttentionObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      const id = entry.target.id;
+      if (!trackedSectionIds.has(id) || seenSections.has(id)) return;
+
+      if (!entry.isIntersecting) {
+        if (timers.has(id)) clearTimeout(timers.get(id));
+        timers.delete(id);
+        return;
+      }
+
+      if (timers.has(id)) return;
+      const timer = setTimeout(() => {
+        const rect = entry.target.getBoundingClientRect();
+        const stillFocused = rect.bottom > window.innerHeight * 0.30 &&
+          rect.top < window.innerHeight * 0.70;
+        timers.delete(id);
+        if (!stillFocused || seenSections.has(id)) return;
+
+        seenSections.add(id);
+        sectionAttentionObserver.unobserve(entry.target);
+        track(`section_view_${id.replace(/-/g, '_')}`, {
+          section_id: id
+        });
+      }, 900);
+
+      timers.set(id, timer);
+    });
+  }, { rootMargin: '-30% 0px -30% 0px', threshold: 0 });
+
+  trackedSectionIds.forEach(id => {
+    const section = document.getElementById(id);
+    if (section) sectionAttentionObserver.observe(section);
+  });
+})();
+</script>
+
 </body>
 </html>
